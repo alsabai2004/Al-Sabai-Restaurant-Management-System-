@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>مطعم السبئي - إدارة متكاملة + سجل الفواتير</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginWrapper" class="login-container">
+  <div class="login-card" id="loginCard">
+    <i class="fas fa-utensils" style="font-size: 3rem; color: #e67e22;"></i>
+    <h2 id="formTitle">تسجيل الدخول</h2>
+    <div class="input-group"><input type="text" id="username" placeholder="اسم المستخدم"></div>
+    <div class="input-group"><input type="password" id="password" placeholder="كلمة المرور"></div>
+    <div id="extraFields" style="display: none;">
+      <div class="input-group"><input type="password" id="confirmPassword" placeholder="تأكيد كلمة المرور"></div>
+    </div>
+    <button class="btn" id="actionBtn">دخول</button>
+    <p id="toggleMsg" class="toggle-link">ليس لديك حساب؟ أنشئ حساباً جديداً</p>
+    <div id="loginMessage" class="print-area" style="margin-top: 1rem; display: none;"></div>
+  </div>
+</div>
+
+<div id="appMain" class="app-main">
+  
+  <header class="top-bar">
+    <div class="container top-flex">
+      <div class="logo"><img src="images/logo.jpg" alt="شعار المطعم"><span>مطعم <span>السبئي</span></span></div>
+      
+      <ul class="header-links">
+        <li><a onclick="showPage('main')"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a onclick="showPage('store')"><i class="fas fa-store"></i> المتجر والبيع</a></li>
+        <li><a onclick="showPage('invoices')"><i class="fas fa-file-invoice-dollar"></i> الفواتير المحفوظة</a></li>
+        <li><a onclick="showPage('view')"><i class="fas fa-utensils"></i> قائمة الطعام</a></li>
+        <li><a onclick="showPage('about')"><i class="fas fa-users"></i> فريق العمل وعنا</a></li>
+      </ul>
+
+      <button class="nav-toggle-btn" id="openSidebarBtn"><i class="fas fa-cog"></i> الإعدادات</button>
+    </div>
+  </header>
+
+  <nav id="sidebarNav" class="sidebar">
+    <div class="sidebar-header">
+      <h3>لوحة التحكم</h3>
+      <button class="close-sidebar-btn" id="closeSidebarBtn">&times;</button>
+    </div>
+    <div class="sidebar-body" style="display: flex; flex-direction: column; height: 100%;">
+      
+      <div class="settings-group">
+        <h4><i class="fas fa-sliders-h"></i> خيارات النظام</h4>
+        <div class="setting-item">
+          <span>تفعيل الوضع الليلي</span>
+          <button class="theme-btn" id="themeBtn" title="تبديل المظهر المظلم/المضيء">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="logout-group">
+        <button class="btn logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+      </div>
+    </div>
+  </nav>
+  
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <main class="container">
+    <div class="operations-panel">
+      <h2 style="text-align: center;">لوحة العمليات الرئيسية</h2>
+      <div class="operations-grid">
+        <div class="op-card" data-op="add" style="border-color: #2ecc71;"><i class="fas fa-plus-circle" style="color: #2ecc71;"></i><span>الإضافة العامة</span></div>
+        <div class="op-card" data-op="edit" style="border-color: #f1c40f;"><i class="fas fa-edit" style="color: #f1c40f;"></i><span>تعديل عنصر</span></div>
+        <div class="op-card" data-op="delete" style="border-color: #e74c3c;"><i class="fas fa-trash-alt" style="color: #e74c3c;"></i><span>حذف عنصر</span></div>
+        
+        <div class="op-card" data-op="view"><i class="fas fa-utensils" style="color: #e67e22;"></i><span>قائمة الطعام</span></div>
+        <div class="op-card" data-op="juices"><i class="fas fa-glass-cheers" style="color: #9b59b6;"></i><span>قائمة العصائر</span></div>
+        <div class="op-card" data-op="store"><i class="fas fa-shopping-cart" style="color: #34495e;"></i><span>المتجر والبيع</span></div>
+        <div class="op-card" data-op="invoices" style="border-color: #3498db;"><i class="fas fa-file-invoice-dollar" style="color: #3498db;"></i><span>سجل الفواتير</span></div>
+        <div class="op-card" data-op="search"><i class="fas fa-search" style="color: #3498db;"></i><span>بحث</span></div>
+      </div>
+    </div>
+
+    <section id="addPage" class="page-section">
+      <button class="btn back-home" data-back="main"><i class="fas fa-arrow-right"></i> الرئيسية</button>
+      <h3>✨ واجهة الإضافة الموحدة للوجبات والعصائر</h3>
+      <div id="validationAlert" class="alert-box"></div>
+
+      <div class="form-row">
+        <label>تصنيف الصنف المراد إضافته *</label>
+        <select id="addItemType" onchange="toggleAddFields()">
+          <option value="dish">🍽️ طبق طعام رئيسي</option>
+          <option value="juice">🥤 عصير أو مشروب منعش</option>
+        </select>
+      </div>
+      <div class="form-row"><label>اسم الصنف *</label><input type="text" id="dishName"></div>
+      <div class="form-row"><label>السعر (ريال) *</label><input type="number" id="dishPrice"></div>
+      <div class="form-row" id="dishDescRow"><label>الوصف المميز للطبق</label><textarea id="dishDesc"></textarea></div>
+      <div class="form-row"><label>رابط صورة الصنف</label><input type="text" id="dishImage"></div>
+      <button class="btn" id="submitAddBtn" style="background: #2ecc71;">حفظ في قاعدة البيانات محلياً</button>
+    </section>
+    
+    <section id="deletePage" class="page-section">
+      <button class="btn back-home" data-back="main"><i class="fas fa-arrow-right"></i> الرئيسية</button>
+      <h3>🗑️ واجهة حذف العناصر من القوائم</h3>
+      <div class="form-row">
+        <label>حدد التصنيف أولاً</label>
+        <select id="deleteItemType" onchange="refreshDeleteSelectData()">
+          <option value="dish">🍽️ أطباق وطعام</option>
+          <option value="juice">🥤 عصائر ومشروبات</option>
+        </select>
+      </div>
+      <div class="form-row"><label>اختر العنصر المستهدف</label><select id="deleteSelect"></select></div>
+      <button class="btn" id="confirmDeleteBtn" style="background:#e74c3c;">تأكيد الحذف النهائي</button>
+      <div id="deleteMessage" class="print-area"></div>
+    </section>
+
+    <section id="editPage" class="page-section">
+      <button class="btn back-home" data-back="main"><i class="fas fa-arrow-right"></i> الرئيسية</button>
+      <h3>✏️ واجهة التعديل وتحديث البيانات</h3>
+      <div class="form-row">
+        <label>حدد التصنيف أولاً</label>
+        <select id="editItemType" onchange="refreshEditSelectData()">
+          <option value="dish">🍽️ أطباق وطعام</option>
+          <option value="juice">🥤 عصائر ومشروبات</option>
+        </select>
+      </div>
+      <div class="form-row"><label>اختر العنصر لتعديله</label><select id="editSelect"></select></div>
+      <div class="form-row"><label>الاسم الجديد</label><input type="text" id="editName"></div>
+      <div class="form-row"><label>السعر الجديد</label><input type="number" id="editPrice"></div>
+      <div class="form-row" id="editDescRow"><label>الوصف الجديد</label><textarea id="editDesc"></textarea></div>
+      <div class="form-row"><label>رابط الصورة الجديد</label><input type="text" id="editImage"></div>
+      <button class="btn" id="saveEditBtn" style="background:#f1c40f; color:#2d2a24;">تحديث الحفظ</button>
+      <div id="editMessage" class="print-area"></div>
+    </section>
+
+    <section id="viewPage" class="page-section"><button class="btn back-home" data-back="main">الرئيسية</button><h3>🍽️ قائمة الطعام الحالية</h3><div id="viewTableContainer"></div></section>
+    <section id="juicesPage" class="page-section"><button class="btn back-home" data-back="main">الرئيسية</button><h3>🥤 قائمة العصائر والمشروبات الباردة</h3><div id="juicesTableContainer"></div></section>
+
+    <section id="storePage" class="page-section">
+      <button class="btn back-home" data-back="main"><i class="fas fa-arrow-right"></i> العودة للرئيسية</button>
+      <h2 style="text-align:center; margin-bottom: 1.5rem;"><i class="fas fa-store"></i> متجر البيع المباشر وإصدار الفواتير</h2>
+      <div class="store-container">
+        <div class="products-area" id="productsArea"></div>
+        <div class="cart-area" id="cartArea">
+          <h3><i class="fas fa-shopping-basket"></i> سلة مشتريات الزبون</h3>
+          <div id="cartItemsList"></div>
+          <div id="cartTotal" class="cart-total"></div>
+          <button id="checkoutBtn" class="btn" style="width:100%; background: #2ecc71;">💳 طباعة الفاتورة وإتمام البيع</button>
+          <button id="clearCartBtn" class="btn" style="background:#95a5a6; width:100%; margin-top:8px;">🗑️ إلغاء وتفريغ السلة</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="invoicesPage" class="page-section">
+      <button class="btn back-home" data-back="main"><i class="fas fa-arrow-right"></i> الرئيسية</button>
+      <h3>🧾 سجل الفواتير الصادرة والـ LocalStorage</h3>
+      <p style="color: gray; margin-bottom: 1rem;">هنا يتم عرض كافة العمليات التي تم حفظها تلقائياً بالوقت والتاريخ الحالي.</p>
+      <div id="invoicesContainer"></div>
+      <button id="clearInvoicesBtn" class="btn" style="background:#e74c3c; margin-top:1.5rem;"><i class="fas fa-trash-alt"></i> مسح سجل الفواتير بالكامل</button>
+    </section>
+
+    <section id="searchPage" class="page-section"><button class="btn back-home" data-back="main">الرئيسية</button><h3>🔍 نظام البحث الشامل والمطابق</h3><input type="text" id="searchInput" placeholder="اكتب اسم الصنف للبحث عنه..."><button class="btn" id="doSearchBtn">تشغيل البحث</button><div id="searchResult" class="print-area"></div></section>
+    
+    <section id="aboutPage" class="page-section">
+      <button class="btn back-home" data-back="main"><i class="fas fa-arrow-right"></i> الرئيسية</button>
+      <h3>👥 بيانات طلاب الفريق الأكاديمي والمشروع</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>اسم الطالب الثنائي</th>
+            <th>الرقم الجامعي الكود</th>
+            <th>المسؤولية التقنية المحددة في المشروع</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+        
+        
+        
+        
+          <tr><td> محمد نجيب عبدالرزاق احمد السبئي </td><td>131</td><td>تنسيقات التصميم الجمالي والوضع المظلم المتكامل (CSS Styling)</td></tr>
+          <tr><td> محمد نجيب عبدالرزاق احمد السبئي </td><td>131</td><td>بناء وهيكلة الصفحات الدلالية وتنسيق واجهات العرض (HTML Structure)</td></tr>
+          <tr><td> محمد نجيب عبدالرزاق احمد السبئي </td><td>131</td><td>العمليات البرمجية، محرك السلة والتحقق الذكي (JavaScript Logic)</td></tr>
+          
+
+
+
+
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 المطور م/محمد نجيب </p>
+    </div>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
